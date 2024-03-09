@@ -78,12 +78,6 @@ const StyledButton = styled.button`
   justify-content: center;
   border: none;
   cursor: pointer;
-
-  &:hover {
-    box-shadow:
-      0 10px 20px rgba(0, 0, 0, 0.19),
-      0 6px 6px rgba(0, 0, 0, 0.23);
-  }
 `;
 
 function Button({ children, onClick, className, size, color, type, icon }) {
