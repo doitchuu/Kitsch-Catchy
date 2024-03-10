@@ -60,6 +60,7 @@ const buttonColors = {
   },
   gradient: {
     background: `linear-gradient(130deg, rgba(249,22,185,1) 0%, rgba(249,22,185,1) 51%, rgba(210,32,255,1) 100%)`,
+    color: "#FFFFFF",
   },
 };
 
