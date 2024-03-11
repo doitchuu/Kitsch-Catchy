@@ -9,8 +9,8 @@ import Loading from "../shared/Loading";
 import closeIcon from "../../assets/close_icon.svg";
 
 function NewFilter() {
-  const [isPopupOpened, setIsPopupOpened] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPopupOpened, setIsPopupOpened] = useState(true);
 
   function handleClosePopup(event) {
     event.preventDefault();
@@ -23,10 +23,9 @@ function NewFilter() {
       {isLoading && (
         <Modal>
           <Loading
-            description="Hang tight 👀
-your unique filter is getting crafted!
-Just a bit longer and it's all yours"
-          ></Loading>
+            description="Hang tight 👀 your unique filter is getting crafted!
+          Just a bit longer and it's all yours"
+          />
         </Modal>
       )}
       <FilterWrapper>

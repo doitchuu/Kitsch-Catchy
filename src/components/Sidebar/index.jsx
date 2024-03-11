@@ -96,7 +96,6 @@ function Sidebar() {
 const SidebarContainer = styled.div`
   min-width: 400px;
   width: 40%;
-  height: 100vh;
   margin: 0;
   padding: 40px;
 
