@@ -3,11 +3,14 @@ import styled from "@emotion/styled";
 
 import Sidebar from "../Sidebar";
 import Header from "../Header";
+import Modal from "../shared/Modal";
+import Loading from "../shared/Loading";
 
 import closeIcon from "../../assets/close_icon.svg";
 
 function NewFilter() {
   const [isPopupOpened, setIsPopupOpened] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   function handleClosePopup(event) {
     event.preventDefault();
@@ -16,27 +19,39 @@ function NewFilter() {
   }
 
   return (
-    <FilterWrapper>
-      <Sidebar />
-      <FilterContainer>
-        <Header />
-        <canvas />
-        {isPopupOpened && (
-          <PopupContainer>
-            Style Your Face Just Right! The better the fit, the cooler the pic.
-            <br />
-            Avoid overlaps for a fab filter match!
-            <img
-              role="presentation"
-              src={closeIcon}
-              alt="closeIcon"
-              className="icon-close"
-              onClick={handleClosePopup}
-            />
-          </PopupContainer>
-        )}
-      </FilterContainer>
-    </FilterWrapper>
+    <>
+      {isLoading && (
+        <Modal>
+          <Loading
+            description="Hang tight 👀
+your unique filter is getting crafted!
+Just a bit longer and it's all yours"
+          ></Loading>
+        </Modal>
+      )}
+      <FilterWrapper>
+        <Sidebar />
+        <FilterContainer>
+          <Header />
+          <canvas />
+          {isPopupOpened && (
+            <PopupContainer>
+              Style Your Face Just Right! The better the fit, the cooler the
+              pic.
+              <br />
+              Avoid overlaps for a fab filter match!
+              <img
+                role="presentation"
+                src={closeIcon}
+                alt="closeIcon"
+                className="icon-close"
+                onClick={handleClosePopup}
+              />
+            </PopupContainer>
+          )}
+        </FilterContainer>
+      </FilterWrapper>
+    </>
   );
 }
 
