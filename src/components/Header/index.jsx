@@ -2,31 +2,82 @@ import React, { useState } from "react";
 import styled from "@emotion/styled";
 
 import Button from "../shared/Button";
+import Popup from "../shared/Popup";
 
-function Header({ onSaveFilter }) {
+function Header() {
   const [filterName, setFilterName] = useState("");
+  const [isOpenedSaveFilterPopup, setIsOpenedSaveFilterPopup] = useState(false);
+  const [isOpenedClearPopup, setIsOpenedClearPopup] = useState(false);
+
+  function handleClosePopup(event) {
+    event.preventDefault();
+
+    setIsOpenedSaveFilterPopup(false);
+    setIsOpenedClearPopup(false);
+  }
+
+  function handleSaveFilter(event) {
+    event.preventDefault();
+
+    setIsOpenedSaveFilterPopup(false);
+  }
+
+  function handleClearStickers(event) {
+    event.preventDefault();
+
+    setIsOpenedClearPopup(false);
+  }
 
   return (
-    <HeaderWrapper>
-      <input
-        type="text"
-        value={filterName}
-        maxLength="20"
-        onChange={(event) => setFilterName(event.target.value)}
-        placeholder="Input your filter name (Max 20 Characters)"
-      />
-      <ButtonContainer>
-        <p className="button-clear">Clear all stickers</p>
-        <Button
-          onClick={() => onSaveFilter(filterName)}
-          size="small"
-          color="gradient"
-          type="solid"
-        >
-          Filter Ready & Snap 📸
-        </Button>
-      </ButtonContainer>
-    </HeaderWrapper>
+    <>
+      {isOpenedClearPopup && (
+        <Popup
+          handleClosePopup={handleClosePopup}
+          handleClick={handleClearStickers}
+          buttonColor="red"
+          buttonText="Clear All"
+          title="Going to Clear All the Stickers?"
+          description="Hit 'Clear' and Poof! All Stickers Gone!
+          Wipe the Slate Clean? Sure You're Cool with That?"
+        />
+      )}
+      {isOpenedSaveFilterPopup && (
+        <Popup
+          handleClosePopup={handleClosePopup}
+          handleClick={handleSaveFilter}
+          buttonColor="pink"
+          buttonText="Love It! 🖤"
+          title="Save your Filter & Snap ?"
+          description="Keep the Filter You Made, and Dive Right Into Photo Fun!"
+        />
+      )}
+      <HeaderWrapper>
+        <input
+          type="text"
+          value={filterName}
+          maxLength="20"
+          onChange={(event) => setFilterName(event.target.value)}
+          placeholder="Input your filter name (Max 20 Characters)"
+        />
+        <ButtonContainer>
+          <p
+            role="presentation"
+            className="button-clear"
+            onClick={() => setIsOpenedClearPopup(true)}
+          >
+            Clear all stickers
+          </p>
+          <Button
+            onClick={() => setIsOpenedSaveFilterPopup(true)}
+            size="small"
+            color="gradient"
+            type="solid"
+          >
+            Filter Ready & Snap 📸
+          </Button>
+        </ButtonContainer>
+      </HeaderWrapper>
+    </>
   );
 }
 
