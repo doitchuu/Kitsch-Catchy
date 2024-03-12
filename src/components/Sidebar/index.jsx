@@ -6,13 +6,39 @@ import { nanoid } from "nanoid";
 import logo from "../../assets/kitsch_catchy_logo_small.png";
 import plusIcon from "../../assets/plus_icon.svg";
 
+import useStickerStore from "../../store/sticker";
+
 function Sidebar() {
   const [activeTab, setActiveTab] = useState("sticker");
-  const [stickers, setStickers] = useState([]);
   const [templates, setTemplates] = useState([]);
+
+  const { stickers, addSticker } = useStickerStore();
 
   function handleStickerUpload(event) {
     event.preventDefault();
+
+    const file = event.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = function () {
+        const image = new Image();
+
+        image.onload = function () {
+          addSticker({
+            src: reader.result,
+            width: image.naturalWidth,
+            height: image.naturalHeight,
+            type: "custom",
+          });
+        };
+
+        image.src = reader.result;
+      };
+
+      reader.readAsDataURL(file);
+    }
   }
 
   function handleTabChange(tab) {
@@ -63,9 +89,9 @@ function Sidebar() {
               </label>
               {stickers &&
                 stickers.map((sticker) => (
-                  <img
+                  <StickerImage
                     key={nanoid(10)}
-                    src={sticker.url}
+                    src={sticker.src}
                     alt={sticker.name}
                     draggable="true"
                   />
@@ -94,13 +120,16 @@ function Sidebar() {
 }
 
 const SidebarContainer = styled.div`
-  min-width: 400px;
-  width: 40%;
+  box-sizing: border-box;
+  width: auto;
+  min-width: 512px;
   margin: 0;
   padding: 40px;
 
   background-color: #2d2d2e;
   color: #ffffff;
+
+  overflow-y: scroll;
 
   input {
     display: none;
@@ -121,26 +150,27 @@ const SidebarContainer = styled.div`
 `;
 
 const TabContainer = styled.div`
-  margin-top: 50px;
+  margin: 0 auto;
   padding-bottom: 40px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0, 0.2);
-  margin: 0 auto;
+  width: 100%;
+  height: 100%;
 
   .sticker-content {
-    display: grid;
-    grid-template-rows: repeat(2, 1fr);
-    margin: 0;
-    padding: 20px 12px;
+    display: flex;
+    width: 100%;
+    padding: 24px 2px;
   }
 `;
 
 const TabContent = styled.div`
   display: flex;
 
-  .sticker-content {
+  .sticker-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    width: auto;
   }
 
   .button-file {
@@ -148,7 +178,7 @@ const TabContent = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 180px;
+    height: 100%;
     border-radius: 4px;
 
     background-color: #ffffff10;
@@ -188,6 +218,18 @@ const TabItem = styled.div`
   font-weight: bold;
 
   transition: all 0.2s ease;
+  cursor: pointer;
+`;
+
+const StickerImage = styled.img`
+  width: 180px;
+  height: 180px;
+  padding: 12px;
+  border-radius: 4px;
+
+  background-color: rgba(255, 255, 255, 0.2);
+
+  object-fit: contain;
   cursor: pointer;
 `;
 
