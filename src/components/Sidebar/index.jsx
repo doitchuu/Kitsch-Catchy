@@ -8,7 +8,7 @@ import plusIcon from "../../assets/plus_icon.svg";
 
 import useStickerStore from "../../store/sticker";
 
-function Sidebar() {
+function Sidebar({ onImageClick }) {
   const [activeTab, setActiveTab] = useState("sticker");
   const [templates, setTemplates] = useState([]);
 
@@ -43,6 +43,10 @@ function Sidebar() {
 
   function handleTabChange(tab) {
     setActiveTab(tab);
+  }
+
+  function handleStickerClick(sticker) {
+    onImageClick(sticker);
   }
 
   return (
@@ -94,6 +98,7 @@ function Sidebar() {
                     src={sticker.src}
                     alt={sticker.name}
                     draggable="true"
+                    onClick={() => handleStickerClick(sticker)}
                   />
                 ))}
             </div>
@@ -178,6 +183,8 @@ const TabContent = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    min-width: 200px;
+    min-height: 200px;
     height: 100%;
     border-radius: 4px;
 
