@@ -8,11 +8,15 @@ import plusIcon from "../../assets/plus_icon.svg";
 
 import useStickerStore from "../../store/sticker";
 
+import defaultStickers from "../../assets/defaultStickers.json";
+
 function Sidebar({ onImageClick }) {
   const [activeTab, setActiveTab] = useState("sticker");
   const [templates, setTemplates] = useState([]);
 
   const { stickers, addSticker } = useStickerStore();
+
+  const allStickers = [...stickers, ...defaultStickers];
 
   function handleStickerUpload(event) {
     event.preventDefault();
@@ -91,16 +95,15 @@ function Sidebar({ onImageClick }) {
                   accept=".png,.jpg,image/*"
                 />
               </label>
-              {stickers &&
-                stickers.map((sticker) => (
-                  <StickerImage
-                    key={nanoid(10)}
-                    src={sticker.src}
-                    alt={sticker.name}
-                    draggable="true"
-                    onClick={() => handleStickerClick(sticker)}
-                  />
-                ))}
+              {allStickers.map((sticker) => (
+                <StickerImage
+                  key={nanoid(10)}
+                  src={sticker.src}
+                  alt={sticker.name}
+                  draggable="true"
+                  onClick={() => handleStickerClick(sticker)}
+                />
+              ))}
             </div>
           </TabContent>
         )}
