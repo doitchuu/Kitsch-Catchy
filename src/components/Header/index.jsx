@@ -4,10 +4,14 @@ import styled from "@emotion/styled";
 import Button from "../shared/Button";
 import Popup from "../shared/Popup";
 
+import useFilterStore from "../../store/filter";
+
 function Header() {
   const [filterName, setFilterName] = useState("");
   const [isOpenedSaveFilterPopup, setIsOpenedSaveFilterPopup] = useState(false);
   const [isOpenedClearPopup, setIsOpenedClearPopup] = useState(false);
+
+  const { clearAllStickers } = useFilterStore();
 
   function handleClosePopup(event) {
     event.preventDefault();
@@ -25,6 +29,7 @@ function Header() {
   function handleClearStickers(event) {
     event.preventDefault();
 
+    clearAllStickers();
     setIsOpenedClearPopup(false);
   }
 
