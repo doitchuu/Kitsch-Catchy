@@ -3,14 +3,13 @@ import { Link } from "react-router-dom";
 import styled from "@emotion/styled";
 import { nanoid } from "nanoid";
 
-import logo from "../../assets/kitsch_catchy_logo_small.png";
-import plusIcon from "../../assets/plus_icon.svg";
-
 import useStickerStore from "../../store/sticker";
 
+import logo from "../../assets/kitsch_catchy_logo_small.png";
+import plusIcon from "../../assets/plus_icon.svg";
 import defaultStickers from "../../assets/defaultStickers.json";
 
-function Sidebar({ onImageClick }) {
+function Sidebar({ onStickerClick }) {
   const [activeTab, setActiveTab] = useState("sticker");
   const [templates, setTemplates] = useState([]);
 
@@ -32,8 +31,8 @@ function Sidebar({ onImageClick }) {
         image.onload = function () {
           addSticker({
             src: reader.result,
-            width: image.naturalWidth,
-            height: image.naturalHeight,
+            size: { width: image.naturalWidth, height: image.naturalHeight },
+            position: { x: 10, y: 10 },
             type: "custom",
           });
         };
@@ -50,7 +49,7 @@ function Sidebar({ onImageClick }) {
   }
 
   function handleStickerClick(sticker) {
-    onImageClick(sticker);
+    onStickerClick(sticker);
   }
 
   return (
