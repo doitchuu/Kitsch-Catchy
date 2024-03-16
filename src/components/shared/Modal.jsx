@@ -14,7 +14,7 @@ const ModalBackground = styled.div`
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 1;
+  z-index: 17;
 
   width: 100%;
   height: 100%;
@@ -26,7 +26,7 @@ const ModalContainer = styled.div`
   position: absolute;
   top: 50%;
   left: 50%;
-  z-index: 2;
+  z-index: 18;
   transform: translate(-50%, -50%);
 
   box-sizing: border-box;
