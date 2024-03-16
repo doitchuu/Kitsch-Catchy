@@ -1,38 +1,28 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import styled from "@emotion/styled";
 
+import { nanoid } from "nanoid";
 import Sidebar from "../Sidebar";
 import Header from "../Header";
 import Modal from "../shared/Modal";
 import Loading from "../shared/Loading";
+import FilterSticker from "../FilterSticker";
+
+import useFilterStore from "../../store/filter";
 
 import closeIcon from "../../assets/close_icon.svg";
 
 function NewFilter() {
   const [isLoading, setIsLoading] = useState(false);
   const [isPopupOpened, setIsPopupOpened] = useState(true);
+  const [selectedStickerId, setSelectedStickerId] = useState(null);
 
-  const canvasRef = useRef(null);
-
-  function renderCanvas() {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const baseImage = new Image();
-
-    baseImage.src = "src/assets/face_sample_image.png";
-    baseImage.onload = () => {
-      const scale = Math.min(
-        canvas.width / baseImage.width,
-        canvas.height / baseImage.height,
-      );
-      const x = canvas.width / 2 - (baseImage.width / 2) * scale;
-      const y = canvas.height / 2 - (baseImage.height / 2) * scale;
-      const width = baseImage.width * scale;
-      const height = baseImage.height * scale;
-
-      ctx.drawImage(baseImage, x, y, width, height);
-    };
-  }
+  const {
+    filterStickers,
+    addFilterSticker,
+    deleteFilterSticker,
+    updateFilterSticker,
+  } = useFilterStore();
 
   function handleClosePopup(event) {
     event.preventDefault();
@@ -40,26 +30,42 @@ function NewFilter() {
     setIsPopupOpened(false);
   }
 
-  function addImageToCanvas(sticker) {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const image = new Image();
-
-    image.src = sticker.src;
-    image.onload = () => {
-      ctx.drawImage(
-        image,
-        (canvas.width - sticker.width) / 2,
-        (canvas.height - sticker.height) / 2,
-        sticker.width,
-        sticker.height,
-      );
-    };
+  function handleAddSticker(newSticker) {
+    addFilterSticker({
+      ...newSticker,
+      id: nanoid(10),
+      position: { x: 10, y: 10 },
+      size: {
+        width: newSticker.size.width / 2,
+        height: newSticker.size.height / 2,
+      },
+      zIndex: filterStickers.length,
+    });
   }
 
-  useEffect(() => {
-    renderCanvas();
-  }, []);
+  function handleDragEnd(id, newPosition) {
+    updateFilterSticker(id, { position: newPosition });
+  }
+
+  function handleResize(id, newSize) {
+    updateFilterSticker(id, { size: newSize });
+  }
+
+  function handleSelect(id) {
+    updateFilterSticker(id, { zIndex: filterStickers.length });
+
+    filterStickers.forEach((sticker) => {
+      if (sticker.id !== id && sticker.zIndex >= 1) {
+        updateFilterSticker(sticker.id, { zIndex: sticker.zIndex - 1 });
+      }
+    });
+
+    setSelectedStickerId(id);
+  }
+
+  function handleDelete(id) {
+    deleteFilterSticker(id);
+  }
 
   return (
     <>
@@ -72,12 +78,28 @@ function NewFilter() {
         </Modal>
       )}
       <FilterWrapper>
-        <Sidebar onImageClick={addImageToCanvas} />
+        <Sidebar onStickerClick={handleAddSticker} />
         <FilterContainer>
           <Header />
-          <CanvasContainer>
-            <StyledCanvas ref={canvasRef} width="700" height="700" />
-          </CanvasContainer>
+          <BackgroundContainer>
+            <FilterCreationArea>
+              {filterStickers.map((filterSticker) => (
+                <FilterSticker
+                  key={filterSticker.id}
+                  id={filterSticker.id}
+                  src={filterSticker.src}
+                  position={filterSticker.position}
+                  size={filterSticker.size}
+                  zIndex={filterSticker.zIndex}
+                  selected={filterSticker.id === selectedStickerId}
+                  onDragEnd={handleDragEnd}
+                  onResize={handleResize}
+                  onSelect={handleSelect}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </FilterCreationArea>
+          </BackgroundContainer>
           {isPopupOpened && (
             <PopupContainer>
               Style Your Face Just Right! The better the fit, the cooler the
@@ -114,20 +136,31 @@ const FilterContainer = styled.div`
   height: 100%;
 `;
 
-const CanvasContainer = styled.div`
-  padding: 40px;
+const BackgroundContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 100%;
 `;
 
-const StyledCanvas = styled.canvas`
-  background-color: #ffffff;
+const FilterCreationArea = styled.div`
+  position: relative;
+  width: 800px;
+  height: 800px;
+  border: 2px solid #4f4f4f;
+  overflow: hidden;
+
+  background-image: url("src/assets/face_sample_image.png");
+  background-size: cover;
+  box-shadow:
+    0 10px 36px rgba(0, 0, 0, 0.05),
+    0 6px 6px rgba(0, 0, 0, 0.1);
 `;
 
 const PopupContainer = styled.div`
   position: fixed;
-  z-index: 1;
+  z-index: 16;
   bottom: 20px;
   right: 20px;
   display: flex;
