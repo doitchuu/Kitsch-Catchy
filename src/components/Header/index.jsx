@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 
 import Button from "../shared/Button";
@@ -10,6 +11,8 @@ function Header() {
   const [filterName, setFilterName] = useState("");
   const [isOpenedSaveFilterPopup, setIsOpenedSaveFilterPopup] = useState(false);
   const [isOpenedClearPopup, setIsOpenedClearPopup] = useState(false);
+
+  const navigate = useNavigate();
 
   const { clearAllStickers } = useFilterStore();
 
@@ -24,6 +27,8 @@ function Header() {
     event.preventDefault();
 
     setIsOpenedSaveFilterPopup(false);
+
+    navigate("/camera");
   }
 
   function handleClearStickers(event) {
