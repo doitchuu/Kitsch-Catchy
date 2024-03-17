@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "@emotion/styled";
-
 import { nanoid } from "nanoid";
+
 import Sidebar from "../Sidebar";
 import Header from "../Header";
 import Modal from "../shared/Modal";
@@ -25,6 +25,7 @@ function NewFilter() {
     addFilterSticker,
     deleteFilterSticker,
     updateFilterSticker,
+    clearAllStickers,
   } = useFilterStore();
 
   function handleClosePopup(event) {
@@ -75,6 +76,10 @@ function NewFilter() {
   function handleDelete(id) {
     deleteFilterSticker(id);
   }
+
+  useEffect(() => {
+    clearAllStickers();
+  }, []);
 
   return (
     <>
