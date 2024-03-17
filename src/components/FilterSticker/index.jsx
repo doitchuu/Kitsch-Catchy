@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "@emotion/styled";
 
 import useDragAndResize from "../../hooks/useDragAndResize";
@@ -28,6 +28,7 @@ function FilterSticker({
 
   function onMouseDown(event) {
     event.stopPropagation();
+
     onSelect(id);
 
     if (event.target.dataset.resize) {
@@ -73,6 +74,7 @@ const StickerWrapper = styled.div`
   border: ${({ selected }) => (selected ? "4px solid #F916F9" : "none")};
 
   cursor: grab;
+  user-select: none;
 
   img {
     width: 100%;
