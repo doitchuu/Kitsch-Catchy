@@ -31,7 +31,7 @@ const buttonTypes = {
   },
   outline: {
     borderRadius: "4px",
-    border: "1px #D1D1D1",
+    border: "1px solid #D1D1D1",
   },
   round: {
     borderRadius: "40px",
@@ -41,7 +41,7 @@ const buttonTypes = {
 const buttonColors = {
   white: {
     backgroundColor: "#FFFFFF",
-    color: "#FFFFFF",
+    color: "#000000",
   },
   pink: {
     backgroundColor: "#FD14FD",
