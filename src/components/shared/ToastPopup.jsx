@@ -32,25 +32,25 @@ const fadeInUp = keyframes`
 
 const ToastContainer = styled.div`
   position: fixed;
-  z-index: 2;
-  top: 87%;
+  z-index: 3;
+  top: 90%;
   left: 0;
   right: 0;
-  margin: 0 auto;
-  padding: 12px;
+  margin: 0 40px;
+  padding: 16px;
 
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 70px;
-  border-radius: 20px;
+  height: 56px;
+  border-radius: 12px;
 
   animation: ${fadeInUp} 0.5s ease-in-out;
 
   opacity: 0.8;
   background-color: #000000;
   color: #ffffff;
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 700;
 `;
 
