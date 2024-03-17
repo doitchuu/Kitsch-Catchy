@@ -6,14 +6,17 @@ import Sidebar from "../Sidebar";
 import Header from "../Header";
 import Modal from "../shared/Modal";
 import Loading from "../shared/Loading";
+import ToastPopup from "../shared/ToastPopup";
 import FilterSticker from "../FilterSticker";
 
 import useFilterStore from "../../store/filter";
 
+import SIZE from "../../constants/sizeConstants";
 import closeIcon from "../../assets/close_icon.svg";
 
 function NewFilter() {
   const [isLoading, setIsLoading] = useState(false);
+  const [toast, setToast] = useState({});
   const [isPopupOpened, setIsPopupOpened] = useState(true);
   const [selectedStickerId, setSelectedStickerId] = useState(null);
 
@@ -31,6 +34,12 @@ function NewFilter() {
   }
 
   function handleAddSticker(newSticker) {
+    if (filterStickers.length >= SIZE.MAX_ADDITIONAL_NUMBER) {
+      setToast({ status: true, message: "Stick to 15 Stickers Max! 🥲" });
+
+      return;
+    }
+
     addFilterSticker({
       ...newSticker,
       id: nanoid(10),
@@ -114,6 +123,9 @@ function NewFilter() {
                 onClick={handleClosePopup}
               />
             </PopupContainer>
+          )}
+          {toast.status && (
+            <ToastPopup setToast={setToast} message={toast.message} />
           )}
         </FilterContainer>
       </FilterWrapper>
