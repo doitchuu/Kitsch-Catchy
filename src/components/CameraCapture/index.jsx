@@ -8,8 +8,17 @@ import Button from "../shared/Button";
 import Popup from "../shared/Popup";
 
 function CameraCapture() {
+  const backgrounds = [
+    "src/assets/background1.jpg",
+    "src/assets/background2.jpg",
+    "src/assets/background3.jpg",
+    "src/assets/background4.jpg",
+    "src/assets/background5.jpg",
+  ];
+
   const [isOpenedRefilterPopup, setIsOpenedRefilterPopup] = useState(false);
   const [isOpenedHomePopup, setIsOpenedHomePopup] = useState(false);
+  const [currentBackground, setCurrentBackground] = useState(backgrounds[0]);
 
   const navigate = useNavigate();
 
@@ -39,14 +48,55 @@ function CameraCapture() {
     navigate("/");
   }
 
+  function getUserCamera() {
+    navigator.mediaDevices
+      .getUserMedia({
+        video: true,
+      })
+      .then((stream) => {
+        const video = videoRef.current;
+
+        video.srcObject = stream;
+
+        video.play();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  function handleChangeBackground() {
+    setCurrentBackground(
+      (prev) =>
+        backgrounds[(backgrounds.indexOf(prev) + 1) % backgrounds.length],
+    );
+  }
+
+  function handleCapture() {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+
+    if (video && canvas) {
+      const { videoWidth, videoHeight } = video;
+
+      canvas.width = videoWidth;
+      canvas.height = videoHeight;
+
+      context.drawImage(video, 0, 0, videoWidth, videoHeight);
+      canvas.toDataURL("image/png");
+    }
+  }
+
   useEffect(() => {
     async function loadModels() {
       await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
       await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
     }
 
+    getUserCamera();
     loadModels();
-  }, []);
+  }, [videoRef]);
 
   return (
     <>
@@ -71,10 +121,11 @@ function CameraCapture() {
           If you're cool with that, hit 'Okay...I know it'."
         />
       )}
-      <CameraWrapper>
+      <CameraWrapper backgroundImage={currentBackground}>
         <button
           className="button-change-background"
           aria-label="change background button"
+          onClick={handleChangeBackground}
         >
           <FiRepeat size="22" color="#212529" />
         </button>
@@ -106,7 +157,11 @@ function CameraCapture() {
           >
             Go to home
           </Button>
-          <button className="button-camera" aria-label="camera button" />
+          <button
+            className="button-camera"
+            aria-label="camera button"
+            onClick={handleCapture}
+          />
           <Button
             size="large"
             type="outline"
@@ -131,7 +186,7 @@ const CameraWrapper = styled.div`
   width: 100vw;
   height: 100vh;
 
-  background-image: url("src/assets/background_gradient.jpg");
+  background-image: url(${(props) => props.backgroundImage});
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -147,11 +202,6 @@ const CameraWrapper = styled.div`
     border-radius: 40px;
     background-color: rgba(255, 255, 255, 1);
     box-shadow: 2px 2px 6px 2px rgba(0, 0, 0, 0.1);
-  }
-
-  .button-change-background:hover {
-    width: 110%;
-    height: 110%;
   }
 
   .icon-change {
@@ -242,8 +292,8 @@ const BottomNavigation = styled.div`
   }
 
   .button-camera {
-    width: 90px;
-    height: 90px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     border: 9px solid transparent;
 
@@ -263,11 +313,13 @@ const Video = styled.video`
   position: absolute;
   width: 1200px;
   height: 757px;
+  object-fit: cover;
 `;
 const Canvas = styled.canvas`
   position: absolute;
   width: 1200px;
   height: 757px;
+  object-fit: cover;
 `;
 
 export default CameraCapture;
