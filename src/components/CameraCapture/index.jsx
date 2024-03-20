@@ -64,8 +64,9 @@ function CameraCapture() {
         const video = videoRef.current;
 
         video.srcObject = stream;
-
-        video.play();
+        video.onloadedmetadata = () => {
+          video.play();
+        };
       })
       .catch((error) => {
         console.log(error);
@@ -119,14 +120,46 @@ function CameraCapture() {
     setShowPhoto(false);
   }
 
-  useEffect(() => {
-    async function loadModels() {
-      await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
-      await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
-    }
+  async function loadModels() {
+    await Promise.all([
+      faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
+      faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
+    ]);
+  }
 
-    getUserCamera();
-    loadModels().then(() => {});
+  function detectFace() {
+    if (!videoRef.current) return;
+
+    videoRef.current.onloadedmetadata = () => {
+      const video = videoRef.current;
+      const displaySize = {
+        width: video.videoWidth,
+        height: video.videoHeight,
+      };
+
+      faceapi.matchDimensions(canvasRef.current, displaySize);
+
+      setInterval(async () => {
+        const detections = await faceapi
+          .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+          .withFaceLandmarks();
+        const context = canvasRef.current.getContext("2d");
+
+        context.clearRect(0, 0, displaySize.width, displaySize.height);
+
+        const resizedDetections = faceapi.resizeResults(
+          detections,
+          displaySize,
+        );
+
+        faceapi.draw.drawDetections(canvasRef.current, resizedDetections);
+        faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections);
+      }, 100);
+    };
+  }
+
+  useEffect(() => {
+    loadModels().then(getUserCamera).then(detectFace);
   }, []);
 
   return (
@@ -198,7 +231,12 @@ function CameraCapture() {
             </PhotoContainer>
           )}
           <VideoContainer>
-            <Video ref={videoRef} autoPlay muted />
+            <Video
+              ref={videoRef}
+              onLoadedMetadata={detectFace}
+              autoPlay
+              muted
+            />
             <Canvas ref={canvasRef} />
           </VideoContainer>
         </CameraContainer>
