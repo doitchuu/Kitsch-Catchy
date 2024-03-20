@@ -2,7 +2,13 @@ import { useState, useEffect } from "react";
 import TIME from "../constants/timeConstants";
 import SIZE from "../constants/sizeConstants";
 
-function useDragAndResize(initialPosition, initialSize, onDragEnd, onResize) {
+function useDragAndResize({
+  position: initialPosition,
+  size: initialSize,
+  onDragEnd,
+  onResize,
+  id,
+}) {
   const [position, setPosition] = useState(initialPosition);
   const [size, setSize] = useState(initialSize);
   const [dragging, setDragging] = useState(false);
@@ -30,12 +36,12 @@ function useDragAndResize(initialPosition, initialSize, onDragEnd, onResize) {
 
   function handleMouseUp() {
     if (dragging) {
-      onDragEnd(position);
+      onDragEnd(id, { ...position });
       setDragging(false);
     }
 
     if (resizing) {
-      onResize(size);
+      onResize(id, { ...size });
       setResizing(false);
     }
 
