@@ -1,9 +1,12 @@
 import React, { useEffect } from "react";
+import debounce from "lodash/debounce";
 import styled from "@emotion/styled";
 
 import useDragAndResize from "../../hooks/useDragAndResize";
 
 import useFilterStore from "../../store/filter";
+
+import TIME from "../../constants/timeConstants";
 
 function FilterSticker({
   src,
@@ -22,11 +25,17 @@ function FilterSticker({
     size: newSize,
     setDragging,
     setResizing,
-  } = useDragAndResize(position, size, onDragEnd, onResize);
+  } = useDragAndResize({
+    position,
+    size,
+    onDragEnd,
+    onResize,
+    id,
+  });
 
   const { updateFilterSticker } = useFilterStore();
 
-  function onMouseDown(event) {
+  const onMouseDown = debounce((event) => {
     event.stopPropagation();
 
     onSelect(id);
@@ -38,7 +47,7 @@ function FilterSticker({
       updateFilterSticker(id, { position: newPosition });
       setDragging(true);
     }
-  }
+  }, TIME.DELAY);
 
   return (
     <StickerWrapper

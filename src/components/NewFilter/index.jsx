@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "@emotion/styled";
+import debounce from "lodash/debounce";
 import { nanoid } from "nanoid";
 
 import Sidebar from "../Sidebar";
@@ -12,6 +13,7 @@ import FilterSticker from "../FilterSticker";
 import useFilterStore from "../../store/filter";
 
 import SIZE from "../../constants/sizeConstants";
+import TIME from "../../constants/timeConstants";
 import closeIcon from "../../assets/close_icon.svg";
 
 function NewFilter() {
@@ -53,13 +55,13 @@ function NewFilter() {
     });
   }
 
-  function handleDragEnd(id, newPosition) {
+  const handleDragEnd = debounce((id, newPosition) => {
     updateFilterSticker(id, { position: newPosition });
-  }
+  }, TIME.DELAY);
 
-  function handleResize(id, newSize) {
+  const handleResize = debounce((id, newSize) => {
     updateFilterSticker(id, { size: newSize });
-  }
+  }, TIME.DELAY);
 
   function handleSelect(id) {
     updateFilterSticker(id, { zIndex: filterStickers.length });
