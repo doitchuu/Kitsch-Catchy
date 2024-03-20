@@ -9,14 +9,17 @@ const useFilterStore = create(
         set((state) => ({
           filterStickers: [...state.filterStickers, newFilterSticker],
         })),
-      updateFilterSticker: (id, updatedData) =>
-        set((state) => ({
-          filterStickers: state.filterStickers.map((filterSticker) =>
-            filterSticker.id === id
-              ? { ...filterSticker, ...updatedData }
-              : filterSticker,
-          ),
-        })),
+      updateFilterSticker: (id, updatedData) => {
+        return set((state) => {
+          return {
+            filterStickers: state.filterStickers.map((filterSticker) =>
+              filterSticker.id === id
+                ? { ...filterSticker, ...updatedData }
+                : filterSticker,
+            ),
+          };
+        });
+      },
       deleteFilterSticker: (id) =>
         set((state) => ({
           filterStickers: state.filterStickers.filter(
