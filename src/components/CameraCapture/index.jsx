@@ -4,8 +4,11 @@ import * as faceapi from "face-api.js";
 import styled from "@emotion/styled";
 
 import { FiRepeat } from "react-icons/fi";
+import { RiDownloadLine, RiDeleteBinLine } from "react-icons/ri";
 import Button from "../shared/Button";
 import Popup from "../shared/Popup";
+
+import TIME from "../../constants/timeConstants";
 
 function CameraCapture() {
   const backgrounds = [
@@ -19,11 +22,15 @@ function CameraCapture() {
   const [isOpenedRefilterPopup, setIsOpenedRefilterPopup] = useState(false);
   const [isOpenedHomePopup, setIsOpenedHomePopup] = useState(false);
   const [currentBackground, setCurrentBackground] = useState(backgrounds[0]);
+  const [showedFlash, setShowedFlash] = useState(false);
+  const [showPhoto, setShowPhoto] = useState(false);
+  const [capturedPhoto, setCapturedPhoto] = useState("");
 
   const navigate = useNavigate();
 
-  const canvasRef = useRef();
-  const videoRef = useRef();
+  const canvasRef = useRef(null);
+  const videoRef = useRef(null);
+  const photoRef = useRef(null);
 
   function handleClosePopup(event) {
     event.preventDefault();
@@ -72,20 +79,44 @@ function CameraCapture() {
     );
   }
 
-  function handleCapture() {
+  function handleCapturePhoto() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
 
-    if (video && canvas) {
-      const { videoWidth, videoHeight } = video;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
 
-      canvas.width = videoWidth;
-      canvas.height = videoHeight;
+    setShowedFlash(true);
 
-      context.drawImage(video, 0, 0, videoWidth, videoHeight);
-      canvas.toDataURL("image/png");
+    setTimeout(() => {
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      setCapturedPhoto(canvas.toDataURL("image/png"));
+      setShowPhoto(true);
+      setShowedFlash(false);
+    }, TIME.FLASH);
+  }
+
+  function handleDownloadPhoto() {
+    const imageName = `${new Date().toISOString().split("T").join(" ")}.png`;
+
+    if (photoRef.current) {
+      photoRef.current.href = capturedPhoto;
+      photoRef.current.download = imageName;
+      photoRef.current.click();
     }
+  }
+
+  function handleClosePhoto() {
+    const canvas = canvasRef.current;
+
+    if (canvas) {
+      canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    setCapturedPhoto("");
+    setShowPhoto(false);
   }
 
   useEffect(() => {
@@ -95,8 +126,8 @@ function CameraCapture() {
     }
 
     getUserCamera();
-    loadModels();
-  }, [videoRef]);
+    loadModels().then(() => {});
+  }, []);
 
   return (
     <>
@@ -122,6 +153,7 @@ function CameraCapture() {
         />
       )}
       <CameraWrapper backgroundImage={currentBackground}>
+        {showedFlash && <div className="flash" />}
         <button
           className="button-change-background"
           aria-label="change background button"
@@ -137,6 +169,34 @@ function CameraCapture() {
               <div className="button-green" />
             </div>
           </div>
+          {showPhoto && (
+            <PhotoContainer>
+              <a
+                ref={photoRef}
+                href={capturedPhoto}
+                className="link-photo"
+                aria-label="photo"
+              />
+              <Button
+                size="large"
+                color="white"
+                type="round"
+                className="button-download"
+                onClick={handleDownloadPhoto}
+                aria-label="download button"
+              >
+                <RiDownloadLine className="icon-download" />
+                Download your cup of tea
+              </Button>
+              <button
+                onClick={handleClosePhoto}
+                className="button-delete"
+                aria-label="delete button"
+              >
+                <RiDeleteBinLine className="icon-delete" />
+              </button>
+            </PhotoContainer>
+          )}
           <VideoContainer>
             <Video ref={videoRef} autoPlay muted />
             <Canvas ref={canvasRef} />
@@ -160,7 +220,7 @@ function CameraCapture() {
           <button
             className="button-camera"
             aria-label="camera button"
-            onClick={handleCapture}
+            onClick={handleCapturePhoto}
           />
           <Button
             size="large"
@@ -206,6 +266,18 @@ const CameraWrapper = styled.div`
 
   .icon-change {
     size: 3rem;
+  }
+
+  .flash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: 100%;
+    height: 100%;
+
+    background-color: #ffffff;
+    opacity: 0.8;
   }
 `;
 
@@ -264,6 +336,48 @@ const CameraContainer = styled.div`
   }
 `;
 
+const PhotoContainer = styled.div`
+  position: absolute;
+  bottom: 40px;
+  z-index: 4;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+
+  a {
+    display: none;
+  }
+
+  .link {
+    display: none;
+  }
+
+  .button-delete {
+    width: 64px;
+    height: 64px;
+    margin-left: 16px;
+    border-radius: 50%;
+    border: none;
+
+    background-color: #ee4a4a;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .button-download {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .icon-delete {
+    font-size: 1.25rem;
+    color: #ffffff;
+  }
+
+  .icon-download {
+    margin-right: 8px;
+    padding: 4px 0px 0px;
+  }
+`;
+
 const VideoContainer = styled.div`
   display: flex;
   width: 100%;
@@ -315,6 +429,7 @@ const Video = styled.video`
   height: 757px;
   object-fit: cover;
 `;
+
 const Canvas = styled.canvas`
   position: absolute;
   width: 1200px;
