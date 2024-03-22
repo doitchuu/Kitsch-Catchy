@@ -8,10 +8,10 @@ import useStickerStore from "../../store/sticker";
 import logo from "../../assets/kitsch_catchy_logo_small.png";
 import plusIcon from "../../assets/plus_icon.svg";
 import defaultStickers from "../../assets/defaultStickers.json";
+import templates from "../../assets/template.json";
 
 function Sidebar({ onStickerClick }) {
   const [activeTab, setActiveTab] = useState("sticker");
-  const [templates, setTemplates] = useState([]);
 
   const { stickers, addSticker } = useStickerStore();
 
@@ -108,16 +108,16 @@ function Sidebar({ onStickerClick }) {
         )}
         {activeTab === "template" && (
           <TabContent id="template-content" className="template-content">
-            <div className="tab-content" id="template-content">
-              {templates &&
-                templates.map((template) => (
-                  <img
-                    key={nanoid(10)}
-                    src={template.url}
-                    alt={template.name}
-                    draggable="true"
-                  />
-                ))}
+            <div className="template-list" id="template-content">
+              {templates.map((template) => (
+                <StickerImage
+                  key={nanoid(10)}
+                  src={template.src}
+                  alt={template.type}
+                  draggable="true"
+                  onClick={() => handleStickerClick(template)}
+                />
+              ))}
             </div>
           </TabContent>
         )}
@@ -163,7 +163,8 @@ const TabContainer = styled.div`
   width: 100%;
   height: 100%;
 
-  .sticker-content {
+  .sticker-content,
+  .template-content {
     display: flex;
     width: 100%;
     padding: 24px 2px;
@@ -173,7 +174,8 @@ const TabContainer = styled.div`
 const TabContent = styled.div`
   display: flex;
 
-  .sticker-list {
+  .sticker-list,
+  .template-list {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
