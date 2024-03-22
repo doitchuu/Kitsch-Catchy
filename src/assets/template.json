@@ -1,0 +1,44 @@
+[
+  {
+    "src": "https://blog.kakaocdn.net/dn/bccxke/btsFYnAUd7i/AjORyRVkrV7ixO25kpCo2k/img.png",
+    "size": { "width": 1560, "height": 1560 },
+    "position": { "x": 10, "y": 10 },
+    "type": "template"
+  },
+  {
+    "src": "https://blog.kakaocdn.net/dn/cCltXk/btsFZL1QIy4/rYPePwjZXIu8HwSTT7qcN0/img.png",
+    "size": { "width": 1560, "height": 1560 },
+    "position": { "x": 10, "y": 10 },
+    "type": "template"
+  },
+  {
+    "src": "https://blog.kakaocdn.net/dn/bexhgz/btsFYLVJcjB/x2VeTDaSKz1GNI0gqKWXK1/img.png",
+    "size": { "width": 1560, "height": 1560 },
+    "position": { "x": 10, "y": 10 },
+    "type": "template"
+  },
+  {
+    "src": "https://blog.kakaocdn.net/dn/bivIVe/btsFYEWImUV/z4XIFWT1SWNHvDs7Ju6Kc0/img.png",
+    "size": { "width": 1560, "height": 1560 },
+    "position": { "x": 10, "y": 10 },
+    "type": "template"
+  },
+  {
+    "src": "https://blog.kakaocdn.net/dn/dIR30f/btsFZVpKi7t/LS3Bfeg2dxTFK4A9lEoOh0/img.png",
+    "size": { "width": 1560, "height": 1560 },
+    "position": { "x": 10, "y": 10 },
+    "type": "template"
+  },
+  {
+    "src": "https://blog.kakaocdn.net/dn/b1Qtwm/btsFY8pG1Aq/Yw4KrfLBfOIr5zEfk7EKSK/img.png",
+    "size": { "width": 1560, "height": 1560 },
+    "position": { "x": 10, "y": 10 },
+    "type": "template"
+  },
+  {
+    "src": "https://blog.kakaocdn.net/dn/F2HTk/btsFW67Cr1F/dNXArc7tOFs8iMdK4qijE1/img.png",
+    "size": { "width": 1560, "height": 1560 },
+    "position": { "x": 10, "y": 10 },
+    "type": "template"
+  }
+]
