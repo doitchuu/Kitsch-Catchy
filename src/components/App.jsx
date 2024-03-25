@@ -11,7 +11,7 @@ function App() {
     <>
       <GlobalStyle />
       <Routes>
-        <Route path="/" exact element={<Onboarding />} />
+        <Route path="/*" element={<Onboarding />} />
         <Route path="/new" element={<NewFilter />} />
         <Route path="/camera" element={<CameraCapture />} />
       </Routes>
