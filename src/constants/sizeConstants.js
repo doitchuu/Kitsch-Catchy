@@ -1,6 +1,7 @@
 const SIZE = {
   MIN_IMAGE_SIZE: 50,
   MAX_ADDITIONAL_NUMBER: 15,
+  MAX_IMAGE_WIDTH: 200,
 };
 
 export default SIZE;
