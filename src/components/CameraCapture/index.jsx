@@ -11,6 +11,7 @@ import Popup from "../shared/Popup";
 import useFilterStore from "../../store/filter";
 
 import TIME from "../../constants/timeConstants";
+import getFaceCenter from "../../utils/getFaceCenter";
 
 function CameraCapture() {
   const backgrounds = [
@@ -67,7 +68,7 @@ function CameraCapture() {
   function handleChangeBackground() {
     setCurrentBackground(
       (previous) =>
-        backgrounds[(backgrounds.indexOf(previous) + 1) % backgrounds.length]
+        backgrounds[(backgrounds.indexOf(previous) + 1) % backgrounds.length],
     );
   }
 
@@ -97,14 +98,14 @@ function CameraCapture() {
       0,
       0,
       captureCanvas.width,
-      captureCanvas.height
+      captureCanvas.height,
     );
     captureContext.drawImage(
       stickersCanvas,
       0,
       0,
       captureCanvas.width,
-      captureCanvas.height
+      captureCanvas.height,
     );
 
     const capturedImage = captureCanvas.toDataURL("image/png");
@@ -146,25 +147,25 @@ function CameraCapture() {
         x: sum.x + point.x / leftEye.length,
         y: sum.y + point.y / leftEye.length,
       }),
-      { x: 0, y: 0 }
+      { x: 0, y: 0 },
     );
     const rightEyeCenter = rightEye.reduce(
       (sum, point) => ({
         x: sum.x + point.x / rightEye.length,
         y: sum.y + point.y / rightEye.length,
       }),
-      { x: 0, y: 0 }
+      { x: 0, y: 0 },
     );
 
     return Math.atan2(
       rightEyeCenter.y - leftEyeCenter.y,
-      rightEyeCenter.x - leftEyeCenter.x
+      rightEyeCenter.x - leftEyeCenter.x,
     );
   }
 
   function renderStickers(detection, canvasContext) {
     const { landmarks } = detection;
-
+    const faceCenter = getFaceCenter(landmarks);
     const {
       x: faceX,
       y: faceY,
@@ -184,31 +185,38 @@ function CameraCapture() {
       }
 
       const stickerWidth = Math.floor(
-        (sticker.size.width / 389.13) * faceWidth
+        (sticker.size.width / 389.13) * faceWidth,
       );
-      const stickerHeight = Math.floor(
-        (sticker.size.height / 529.44) * faceHeight
-      );
-      const horizontalSpacing = faceWidth * 0.1 * index;
+      let stickerHeight;
       let relativeX;
       let relativeY;
 
       if (sticker.type === "template") {
+        stickerHeight = Math.floor((sticker.size.height / 529.44) * faceHeight);
         relativeX = faceX + faceWidth / 2 - stickerWidth / 2;
         relativeY = faceY + faceHeight / 2 - stickerHeight / 2 - faceHeight / 3;
       } else {
-        relativeX =
-          (sticker.position.x / 800) * faceWidth +
-          faceX +
-          horizontalSpacing -
-          70;
-        relativeY = (sticker.position.y / 800) * faceHeight + faceY - 70;
+        const originalAspectRatio =
+          stickerImage.naturalHeight / stickerImage.naturalWidth;
+
+        stickerHeight = stickerWidth * originalAspectRatio;
+        relativeX = Math.floor(
+          faceCenter.x +
+            (sticker.position.x - 500) * (faceWidth / 800) +
+            faceWidth * 0.25 * index,
+        );
+        relativeY = Math.floor(
+          faceCenter.y +
+            (sticker.position.y - 400) * (faceHeight / 800) +
+            faceHeight * 0.35 * index -
+            100,
+        );
       }
 
       canvasContext.save();
       canvasContext.translate(
         relativeX + stickerWidth / 2,
-        relativeY + stickerHeight / 2
+        relativeY + stickerHeight / 2,
       );
       canvasContext.rotate(calculateStickerRotation(landmarks));
       canvasContext.drawImage(
@@ -216,7 +224,7 @@ function CameraCapture() {
         -stickerWidth / 2,
         -stickerHeight / 2,
         stickerWidth,
-        stickerHeight
+        stickerHeight,
       );
       canvasContext.restore();
     });
@@ -245,7 +253,7 @@ function CameraCapture() {
 
           const resizedDetections = faceapi.resizeResults(
             detections,
-            displaySize
+            displaySize,
           );
 
           resizedDetections.forEach((resizedDetection) => {
@@ -290,7 +298,7 @@ function CameraCapture() {
   useEffect(() => {
     offScreenCanvasRef.current = new OffscreenCanvas(
       videoRef.current.videoWidth || 1200,
-      videoRef.current.videoHeight || 800
+      videoRef.current.videoHeight || 800,
     );
 
     const offScreenContext = offScreenCanvasRef.current.getContext("2d", {
@@ -342,7 +350,7 @@ function CameraCapture() {
           0,
           0,
           canvasRef.current.width,
-          canvasRef.current.height
+          canvasRef.current.height,
         );
       }
     };
