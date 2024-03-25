@@ -190,7 +190,7 @@ const FilterCreationArea = styled.div`
   border: 2px solid #4f4f4f;
   overflow: hidden;
 
-  background-image: url("../../../public/assets/face_sample_image.png");
+  background-image: url("/assets/face_sample_image.png");
   background-size: cover;
   box-shadow:
     0 10px 36px rgba(0, 0, 0, 0.05),

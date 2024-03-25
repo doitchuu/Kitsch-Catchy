@@ -15,11 +15,11 @@ import getFaceCenter from "../../utils/getFaceCenter";
 
 function CameraCapture() {
   const backgrounds = [
-    "public/assets/backgrounds/background1.jpg",
-    "public/assets/backgrounds/background2.jpg",
-    "public/assets/backgrounds/background3.jpg",
-    "public/assets/backgrounds/background4.jpg",
-    "public/assets/backgrounds/background5.jpg",
+    "/assets/backgrounds/background1.jpg",
+    "/assets/backgrounds/background2.jpg",
+    "/assets/backgrounds/background3.jpg",
+    "/assets/backgrounds/background4.jpg",
+    "/assets/backgrounds/background5.jpg",
   ];
 
   const [isOpenedRefilterPopup, setIsOpenedRefilterPopup] = useState(false);
