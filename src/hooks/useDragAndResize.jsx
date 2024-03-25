@@ -5,6 +5,7 @@ import SIZE from "../constants/sizeConstants";
 function useDragAndResize({
   position: initialPosition,
   size: initialSize,
+  aspectRatio,
   onDragEnd,
   onResize,
   id,
@@ -21,16 +22,16 @@ function useDragAndResize({
         y: prev.y + event.movementY * TIME.MOVE_SPEED,
       }));
     } else if (resizing) {
-      setSize((prev) => ({
-        width: Math.max(
-          prev.width + event.movementX * TIME.MOVE_SPEED,
-          SIZE.MIN_IMAGE_SIZE,
-        ),
-        height: Math.max(
-          prev.height + event.movementY * TIME.MOVE_SPEED,
-          SIZE.MIN_IMAGE_SIZE,
-        ),
-      }));
+      const newWidth = Math.max(
+        size.width + event.movementX,
+        SIZE.MIN_IMAGE_SIZE,
+      );
+      const newHeight = newWidth / aspectRatio;
+
+      setSize({
+        width: newWidth,
+        height: newHeight,
+      });
     }
   }
 
