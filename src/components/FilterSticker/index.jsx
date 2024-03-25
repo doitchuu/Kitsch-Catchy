@@ -11,14 +11,15 @@ import TIME from "../../constants/timeConstants";
 function FilterSticker({
   src,
   id,
-  size,
   position,
+  size,
   zIndex,
   selected,
   onSelect,
   onDragEnd,
   onDelete,
   onResize,
+  aspectRatio,
 }) {
   const {
     position: newPosition,
@@ -28,6 +29,7 @@ function FilterSticker({
   } = useDragAndResize({
     position,
     size,
+    aspectRatio,
     onDragEnd,
     onResize,
     id,
