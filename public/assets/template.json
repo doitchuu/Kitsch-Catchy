@@ -1,42 +1,42 @@
 [
   {
-    "src": "src/assets/templates/template_1.png",
+    "src": "/assets/templates/template_1.png",
     "size": { "width": 1560, "height": 1560 },
     "position": { "x": 10, "y": 10 },
     "type": "template"
   },
   {
-    "src": "src/assets/templates/template_2.png",
+    "src": "/assets/templates/template_2.png",
     "size": { "width": 1560, "height": 1560 },
     "position": { "x": 10, "y": 10 },
     "type": "template"
   },
   {
-    "src": "src/assets/templates/template_3.png",
+    "src": "/assets/templates/template_3.png",
     "size": { "width": 1560, "height": 1560 },
     "position": { "x": 10, "y": 10 },
     "type": "template"
   },
   {
-    "src": "src/assets/templates/template_4.png",
+    "src": "/assets/templates/template_4.png",
     "size": { "width": 1560, "height": 1560 },
     "position": { "x": 10, "y": 10 },
     "type": "template"
   },
   {
-    "src": "src/assets/templates/template_5.png",
+    "src": "/assets/templates/template_5.png",
     "size": { "width": 1560, "height": 1560 },
     "position": { "x": 10, "y": 10 },
     "type": "template"
   },
   {
-    "src": "src/assets/templates/template_6.png",
+    "src": "/assets/templates/template_6.png",
     "size": { "width": 1560, "height": 1560 },
     "position": { "x": 10, "y": 10 },
     "type": "template"
   },
   {
-    "src": "src/assets/templates/template_7.png",
+    "src": "/assets/templates/template_7.png",
     "size": { "width": 1560, "height": 1560 },
     "position": { "x": 10, "y": 10 },
     "type": "template"

@@ -5,10 +5,10 @@ import { nanoid } from "nanoid";
 
 import useStickerStore from "../../store/sticker";
 
-import logo from "../../assets/kitsch_catchy_logo_small.png";
-import plusIcon from "../../assets/plus_icon.svg";
-import defaultStickers from "../../assets/defaultStickers.json";
-import templates from "../../assets/template.json";
+import logo from "../../../public/assets/kitsch_catchy_logo_small.png";
+import plusIcon from "../../../public/assets/plus_icon.svg";
+import defaultStickers from "../../../public/assets/defaultStickers.json";
+import templates from "../../../public/assets/template.json";
 
 function Sidebar({ onStickerClick }) {
   const [activeTab, setActiveTab] = useState("sticker");

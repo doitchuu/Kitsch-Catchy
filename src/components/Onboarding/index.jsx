@@ -5,9 +5,9 @@ import styled from "@emotion/styled";
 import Button from "../shared/Button";
 import Modal from "../shared/Modal";
 
-import logo from "../../assets/kitsch_catchy_logo.png";
-import infoIcon from "../../assets/information_icon.svg";
-import serviceImage from "../../assets/service_image.png";
+import logo from "../../../public/assets/kitsch_catchy_logo.png";
+import infoIcon from "../../../public/assets/information_icon.svg";
+import serviceImage from "../../../public/assets/service_image.png";
 
 function Onboarding() {
   const [isModalOpen, setIsModalOpen] = useState(false);

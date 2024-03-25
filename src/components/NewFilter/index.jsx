@@ -14,7 +14,7 @@ import useFilterStore from "../../store/filter";
 
 import SIZE from "../../constants/sizeConstants";
 import TIME from "../../constants/timeConstants";
-import closeIcon from "../../assets/close_icon.svg";
+import closeIcon from "../../../public/assets/close_icon.svg";
 
 function NewFilter() {
   const [isLoading, setIsLoading] = useState(false);
@@ -190,7 +190,7 @@ const FilterCreationArea = styled.div`
   border: 2px solid #4f4f4f;
   overflow: hidden;
 
-  background-image: url("src/assets/face_sample_image.png");
+  background-image: url("../../../public/assets/face_sample_image.png");
   background-size: cover;
   box-shadow:
     0 10px 36px rgba(0, 0, 0, 0.05),

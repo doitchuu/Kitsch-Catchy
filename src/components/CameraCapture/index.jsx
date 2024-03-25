@@ -15,11 +15,11 @@ import getFaceCenter from "../../utils/getFaceCenter";
 
 function CameraCapture() {
   const backgrounds = [
-    "src/assets/backgrounds/background1.jpg",
-    "src/assets/backgrounds/background2.jpg",
-    "src/assets/backgrounds/background3.jpg",
-    "src/assets/backgrounds/background4.jpg",
-    "src/assets/backgrounds/background5.jpg",
+    "public/assets/backgrounds/background1.jpg",
+    "public/assets/backgrounds/background2.jpg",
+    "public/assets/backgrounds/background3.jpg",
+    "public/assets/backgrounds/background4.jpg",
+    "public/assets/backgrounds/background5.jpg",
   ];
 
   const [isOpenedRefilterPopup, setIsOpenedRefilterPopup] = useState(false);
@@ -68,7 +68,7 @@ function CameraCapture() {
   function handleChangeBackground() {
     setCurrentBackground(
       (previous) =>
-        backgrounds[(backgrounds.indexOf(previous) + 1) % backgrounds.length],
+        backgrounds[(backgrounds.indexOf(previous) + 1) % backgrounds.length]
     );
   }
 
@@ -98,14 +98,14 @@ function CameraCapture() {
       0,
       0,
       captureCanvas.width,
-      captureCanvas.height,
+      captureCanvas.height
     );
     captureContext.drawImage(
       stickersCanvas,
       0,
       0,
       captureCanvas.width,
-      captureCanvas.height,
+      captureCanvas.height
     );
 
     const capturedImage = captureCanvas.toDataURL("image/png");
@@ -147,19 +147,19 @@ function CameraCapture() {
         x: sum.x + point.x / leftEye.length,
         y: sum.y + point.y / leftEye.length,
       }),
-      { x: 0, y: 0 },
+      { x: 0, y: 0 }
     );
     const rightEyeCenter = rightEye.reduce(
       (sum, point) => ({
         x: sum.x + point.x / rightEye.length,
         y: sum.y + point.y / rightEye.length,
       }),
-      { x: 0, y: 0 },
+      { x: 0, y: 0 }
     );
 
     return Math.atan2(
       rightEyeCenter.y - leftEyeCenter.y,
-      rightEyeCenter.x - leftEyeCenter.x,
+      rightEyeCenter.x - leftEyeCenter.x
     );
   }
 
@@ -185,7 +185,7 @@ function CameraCapture() {
       }
 
       const stickerWidth = Math.floor(
-        (sticker.size.width / 389.13) * faceWidth,
+        (sticker.size.width / 389.13) * faceWidth
       );
       let stickerHeight;
       let relativeX;
@@ -203,20 +203,20 @@ function CameraCapture() {
         relativeX = Math.floor(
           faceCenter.x +
             (sticker.position.x - 500) * (faceWidth / 800) +
-            faceWidth * 0.25 * index,
+            faceWidth * 0.25 * index
         );
         relativeY = Math.floor(
           faceCenter.y +
             (sticker.position.y - 400) * (faceHeight / 800) +
             faceHeight * 0.35 * index -
-            100,
+            100
         );
       }
 
       canvasContext.save();
       canvasContext.translate(
         relativeX + stickerWidth / 2,
-        relativeY + stickerHeight / 2,
+        relativeY + stickerHeight / 2
       );
       canvasContext.rotate(calculateStickerRotation(landmarks));
       canvasContext.drawImage(
@@ -224,7 +224,7 @@ function CameraCapture() {
         -stickerWidth / 2,
         -stickerHeight / 2,
         stickerWidth,
-        stickerHeight,
+        stickerHeight
       );
       canvasContext.restore();
     });
@@ -253,7 +253,7 @@ function CameraCapture() {
 
           const resizedDetections = faceapi.resizeResults(
             detections,
-            displaySize,
+            displaySize
           );
 
           resizedDetections.forEach((resizedDetection) => {
@@ -298,7 +298,7 @@ function CameraCapture() {
   useEffect(() => {
     offScreenCanvasRef.current = new OffscreenCanvas(
       videoRef.current.videoWidth || 1200,
-      videoRef.current.videoHeight || 800,
+      videoRef.current.videoHeight || 800
     );
 
     const offScreenContext = offScreenCanvasRef.current.getContext("2d", {
@@ -350,7 +350,7 @@ function CameraCapture() {
           0,
           0,
           canvasRef.current.width,
-          canvasRef.current.height,
+          canvasRef.current.height
         );
       }
     };
