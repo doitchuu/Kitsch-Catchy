@@ -43,13 +43,30 @@ function NewFilter() {
       return;
     }
 
+    const newSize = { ...newSticker.size };
+
+    if (newSticker.type === "template") {
+      newSize.width /= 2;
+      newSize.height /= 2;
+    }
+
+    if (
+      newSize.width > SIZE.MAX_IMAGE_WIDTH &&
+      newSticker.type !== "template"
+    ) {
+      const ratio = newSize.height / newSize.width;
+
+      newSize.width = SIZE.MAX_IMAGE_WIDTH;
+      newSize.height = SIZE.MAX_IMAGE_WIDTH * ratio;
+    }
+
     addFilterSticker({
       ...newSticker,
       id: nanoid(10),
       position: { x: 10, y: 10 },
       size: {
-        width: newSticker.size.width / 2,
-        height: newSticker.size.height / 2,
+        width: newSize.width,
+        height: newSize.height,
       },
       zIndex: filterStickers.length,
     });
@@ -106,6 +123,9 @@ function NewFilter() {
                   src={filterSticker.src}
                   position={filterSticker.position}
                   size={filterSticker.size}
+                  aspectRatio={
+                    filterSticker.size.width / filterSticker.size.height
+                  }
                   zIndex={filterSticker.zIndex}
                   selected={filterSticker.id === selectedStickerId}
                   onDragEnd={handleDragEnd}
