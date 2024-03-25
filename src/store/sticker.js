@@ -8,7 +8,7 @@ const useStickerStore = create(
       stickers: [],
       addSticker: (sticker) =>
         set((state) => ({
-          stickers: [...state.stickers, { ...sticker, id: nanoid(10) }],
+          stickers: [{ ...sticker, id: nanoid(10) }, ...state.stickers],
         })),
       deleteSticker: (id) =>
         set((state) => ({
