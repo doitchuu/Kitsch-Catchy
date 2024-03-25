@@ -31,12 +31,14 @@ function Sidebar({ onStickerClick }) {
         image.onload = function () {
           addSticker({
             src: reader.result,
-            size: { width: image.naturalWidth, height: image.naturalHeight },
+            size: {
+              width: image.naturalWidth,
+              height: image.naturalHeight,
+            },
             position: { x: 10, y: 10 },
             type: "custom",
           });
         };
-
         image.src = reader.result;
       };
 
@@ -129,7 +131,7 @@ function Sidebar({ onStickerClick }) {
 const SidebarContainer = styled.div`
   box-sizing: border-box;
   width: auto;
-  min-width: 512px;
+  min-width: 480px;
   margin: 0;
   padding: 40px;
 
@@ -137,10 +139,6 @@ const SidebarContainer = styled.div`
   color: #ffffff;
 
   overflow-y: scroll;
-
-  input {
-    display: none;
-  }
 
   .image-logo {
     width: 200px;
@@ -174,11 +172,15 @@ const TabContainer = styled.div`
 const TabContent = styled.div`
   display: flex;
 
+  input {
+    display: none;
+  }
+
   .sticker-list,
   .template-list {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
+    gap: 20px;
     width: auto;
   }
 
@@ -187,8 +189,8 @@ const TabContent = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-width: 200px;
-    min-height: 200px;
+    min-width: 160px;
+    min-height: 160px;
     height: 100%;
     border-radius: 4px;
 
@@ -233,8 +235,8 @@ const TabItem = styled.div`
 `;
 
 const StickerImage = styled.img`
-  width: 180px;
-  height: 180px;
+  width: 162px;
+  height: 162px;
   padding: 12px;
   border-radius: 4px;
 
