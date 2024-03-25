@@ -8,6 +8,8 @@ import { RiDownloadLine, RiDeleteBinLine } from "react-icons/ri";
 import Button from "../shared/Button";
 import Popup from "../shared/Popup";
 
+import useFilterStore from "../../store/filter";
+
 import TIME from "../../constants/timeConstants";
 
 function CameraCapture() {
@@ -22,15 +24,22 @@ function CameraCapture() {
   const [isOpenedRefilterPopup, setIsOpenedRefilterPopup] = useState(false);
   const [isOpenedHomePopup, setIsOpenedHomePopup] = useState(false);
   const [currentBackground, setCurrentBackground] = useState(backgrounds[0]);
+
   const [showedFlash, setShowedFlash] = useState(false);
   const [showPhoto, setShowPhoto] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState("");
+  const [isCapturing, setIsCapturing] = useState(false);
 
   const navigate = useNavigate();
+
+  const { filterStickers } = useFilterStore();
 
   const canvasRef = useRef(null);
   const videoRef = useRef(null);
   const photoRef = useRef(null);
+  const streamRef = useRef(null);
+  const offScreenCanvasRef = useRef(null);
+  const stickerImages = useRef({});
 
   function handleClosePopup(event) {
     event.preventDefault();
@@ -55,48 +64,61 @@ function CameraCapture() {
     navigate("/");
   }
 
-  function getUserCamera() {
-    navigator.mediaDevices
-      .getUserMedia({
-        video: true,
-      })
-      .then((stream) => {
-        const video = videoRef.current;
-
-        video.srcObject = stream;
-        video.onloadedmetadata = () => {
-          video.play();
-        };
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }
-
   function handleChangeBackground() {
     setCurrentBackground(
-      (prev) =>
-        backgrounds[(backgrounds.indexOf(prev) + 1) % backgrounds.length],
+      (previous) =>
+        backgrounds[(backgrounds.indexOf(previous) + 1) % backgrounds.length],
     );
   }
 
   function handleCapturePhoto() {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
+    setIsCapturing(true);
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    const video = videoRef.current;
+    const stickersCanvas = canvasRef.current;
+    const captureCanvas = document.createElement("canvas");
+
+    if (!video || !stickersCanvas) {
+      console.error("Video or stickersCanvas is not available");
+      setIsCapturing(false);
+
+      return;
+    }
+
+    captureCanvas.width = video.videoWidth;
+    captureCanvas.height = video.videoHeight;
+
+    const captureContext = captureCanvas.getContext("2d", {
+      willReadFrequently: true,
+    });
+
+    captureContext.drawImage(
+      video,
+      0,
+      0,
+      captureCanvas.width,
+      captureCanvas.height,
+    );
+    captureContext.drawImage(
+      stickersCanvas,
+      0,
+      0,
+      captureCanvas.width,
+      captureCanvas.height,
+    );
+
+    const capturedImage = captureCanvas.toDataURL("image/png");
 
     setShowedFlash(true);
 
     setTimeout(() => {
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      setCapturedPhoto(canvas.toDataURL("image/png"));
+      setCapturedPhoto(capturedImage);
       setShowPhoto(true);
       setShowedFlash(false);
+      setIsCapturing(false);
     }, TIME.FLASH);
+
+    videoRef.current.pause();
   }
 
   function handleDownloadPhoto() {
@@ -110,14 +132,152 @@ function CameraCapture() {
   }
 
   function handleClosePhoto() {
-    const canvas = canvasRef.current;
-
-    if (canvas) {
-      canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-    }
-
     setCapturedPhoto("");
     setShowPhoto(false);
+
+    videoRef.current.play();
+  }
+
+  function calculateStickerRotation(landmarks) {
+    const leftEye = landmarks.getLeftEye();
+    const rightEye = landmarks.getRightEye();
+    const leftEyeCenter = leftEye.reduce(
+      (sum, point) => ({
+        x: sum.x + point.x / leftEye.length,
+        y: sum.y + point.y / leftEye.length,
+      }),
+      { x: 0, y: 0 },
+    );
+    const rightEyeCenter = rightEye.reduce(
+      (sum, point) => ({
+        x: sum.x + point.x / rightEye.length,
+        y: sum.y + point.y / rightEye.length,
+      }),
+      { x: 0, y: 0 },
+    );
+
+    return Math.atan2(
+      rightEyeCenter.y - leftEyeCenter.y,
+      rightEyeCenter.x - leftEyeCenter.x,
+    );
+  }
+
+  function renderStickers(detection, canvasContext) {
+    const { landmarks } = detection;
+
+    const {
+      x: faceX,
+      y: faceY,
+      width: faceWidth,
+      height: faceHeight,
+    } = detection.detection.box;
+
+    filterStickers.forEach((sticker, index) => {
+      if (!sticker.position || !sticker.size) {
+        return;
+      }
+
+      const stickerImage = stickerImages.current[sticker.src];
+
+      if (!stickerImage) {
+        return;
+      }
+
+      const stickerWidth = Math.floor(
+        (sticker.size.width / 389.13) * faceWidth,
+      );
+      const stickerHeight = Math.floor(
+        (sticker.size.height / 529.44) * faceHeight,
+      );
+      const horizontalSpacing = faceWidth * 0.1 * index;
+      let relativeX;
+      let relativeY;
+
+      if (sticker.type === "template") {
+        relativeX = faceX + faceWidth / 2 - stickerWidth / 2;
+        relativeY = faceY + faceHeight / 2 - stickerHeight / 2 - faceHeight / 3;
+      } else {
+        relativeX =
+          (sticker.position.x / 800) * faceWidth +
+          faceX +
+          horizontalSpacing -
+          70;
+        relativeY = (sticker.position.y / 800) * faceHeight + faceY - 70;
+      }
+
+      canvasContext.save();
+      canvasContext.translate(
+        relativeX + stickerWidth / 2,
+        relativeY + stickerHeight / 2,
+      );
+      canvasContext.rotate(calculateStickerRotation(landmarks));
+      canvasContext.drawImage(
+        stickerImage,
+        -stickerWidth / 2,
+        -stickerHeight / 2,
+        stickerWidth,
+        stickerHeight,
+      );
+      canvasContext.restore();
+    });
+  }
+
+  function detectFace() {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    const displaySize = { width: video.videoWidth, height: video.videoHeight };
+
+    faceapi.matchDimensions(canvas, displaySize);
+
+    const processFrame = () => {
+      if (isCapturing) {
+        return;
+      }
+
+      faceapi
+        .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .then((detections) => {
+          context.clearRect(0, 0, displaySize.width, displaySize.height);
+
+          const resizedDetections = faceapi.resizeResults(
+            detections,
+            displaySize,
+          );
+
+          resizedDetections.forEach((resizedDetection) => {
+            renderStickers(resizedDetection, context);
+          });
+
+          requestAnimationFrame(processFrame);
+        });
+    };
+
+    processFrame();
+  }
+
+  function getUserCamera() {
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then((stream) => {
+        streamRef.current = stream;
+
+        const video = videoRef.current;
+
+        if (!video) return;
+
+        video.srcObject = stream;
+        video.onloadedmetadata = () => {
+          video.play();
+          detectFace();
+        };
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   async function loadModels() {
@@ -127,39 +287,65 @@ function CameraCapture() {
     ]);
   }
 
-  function detectFace() {
-    if (!videoRef.current) return;
+  useEffect(() => {
+    offScreenCanvasRef.current = new OffscreenCanvas(
+      videoRef.current.videoWidth || 1200,
+      videoRef.current.videoHeight || 800,
+    );
 
-    videoRef.current.onloadedmetadata = () => {
-      const video = videoRef.current;
-      const displaySize = {
-        width: video.videoWidth,
-        height: video.videoHeight,
-      };
+    const offScreenContext = offScreenCanvasRef.current.getContext("2d", {
+      willReadFrequently: true,
+    });
 
-      faceapi.matchDimensions(canvasRef.current, displaySize);
-
-      setInterval(async () => {
-        const detections = await faceapi
-          .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-          .withFaceLandmarks();
-        const context = canvasRef.current.getContext("2d");
-
-        context.clearRect(0, 0, displaySize.width, displaySize.height);
-
-        const resizedDetections = faceapi.resizeResults(
-          detections,
-          displaySize,
-        );
-
-        faceapi.draw.drawDetections(canvasRef.current, resizedDetections);
-        faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections);
-      }, 100);
-    };
-  }
+    filterStickers.forEach((sticker) => {
+      if (!stickerImages.current[sticker.src]) {
+        const image = new Image();
+        image.src = sticker.src;
+        image.onload = () => {
+          stickerImages.current[sticker.src] = image;
+          offScreenContext.drawImage(image, 0, 0);
+        };
+      }
+    });
+  }, [filterStickers]);
 
   useEffect(() => {
-    loadModels().then(getUserCamera).then(detectFace);
+    let frameId;
+
+    loadModels().then(() => {
+      getUserCamera();
+
+      frameId = requestAnimationFrame(detectFace);
+    });
+
+    return () => {
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+      }
+
+      if (streamRef.current) {
+        const tracks = streamRef.current.getTracks();
+
+        tracks.forEach((track) => {
+          track.stop();
+        });
+
+        streamRef.current = null;
+      }
+
+      if (canvasRef.current) {
+        const context = canvasRef.current.getContext("2d", {
+          willReadFrequently: true,
+        });
+
+        context.clearRect(
+          0,
+          0,
+          canvasRef.current.width,
+          canvasRef.current.height,
+        );
+      }
+    };
   }, []);
 
   return (
@@ -295,9 +481,8 @@ const CameraWrapper = styled.div`
     right: 28px;
     padding: 18px 18px 14px;
     border: 1px solid #f3f3f3;
-    size: 3rem;
+    border-radius: 50%;
 
-    border-radius: 40px;
     background-color: rgba(255, 255, 255, 1);
     box-shadow: 2px 2px 6px 2px rgba(0, 0, 0, 0.1);
   }
@@ -326,8 +511,8 @@ const CameraContainer = styled.div`
   left: 50%;
   z-index: 1;
   transform: translate(-50%, -50%);
-  width: 1200px;
-  height: 800px;
+  width: 1000px;
+  height: 680px;
 
   border-radius: 8px;
   background-color: #ffffff;
@@ -351,8 +536,8 @@ const CameraContainer = styled.div`
   .button-red,
   .button-yellow,
   .button-green {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
     margin-left: 12px;
     border-radius: 50%;
   }
@@ -418,8 +603,8 @@ const PhotoContainer = styled.div`
 
 const VideoContainer = styled.div`
   display: flex;
-  width: 100%;
-  height: 100%;
+  width: 1000px;
+  height: 642px;
 `;
 
 const BottomNavigation = styled.div`
@@ -431,7 +616,7 @@ const BottomNavigation = styled.div`
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 120px;
+  height: 100px;
   border-top: 1px solid #e3e3e3;
 
   background-color: #ffffff;
@@ -444,8 +629,8 @@ const BottomNavigation = styled.div`
   }
 
   .button-camera {
-    width: 80px;
-    height: 80px;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     border: 9px solid transparent;
 
@@ -463,15 +648,15 @@ const BottomNavigation = styled.div`
 
 const Video = styled.video`
   position: absolute;
-  width: 1200px;
-  height: 757px;
+  width: 1000px;
+  height: 642px;
   object-fit: cover;
 `;
 
 const Canvas = styled.canvas`
   position: absolute;
-  width: 1200px;
-  height: 757px;
+  width: 1000px;
+  height: 642px;
   object-fit: cover;
 `;
 
