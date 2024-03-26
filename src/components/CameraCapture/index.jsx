@@ -12,6 +12,9 @@ import useFilterStore from "../../store/filter";
 
 import TIME from "../../constants/timeConstants";
 import getFaceCenter from "../../utils/getFaceCenter";
+import threeImage from "../../../public/assets/numbers/number_3.png";
+import twoImage from "../../../public/assets/numbers/number_2.png";
+import oneImage from "../../../public/assets/numbers/number_1.png";
 
 function CameraCapture() {
   const backgrounds = [
@@ -30,6 +33,7 @@ function CameraCapture() {
   const [showPhoto, setShowPhoto] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState("");
   const [isCapturing, setIsCapturing] = useState(false);
+  const [countdownNumber, setCountdownNumber] = useState(null);
 
   const navigate = useNavigate();
 
@@ -41,6 +45,8 @@ function CameraCapture() {
   const streamRef = useRef(null);
   const offScreenCanvasRef = useRef(null);
   const stickerImages = useRef({});
+
+  const countdownImages = { 3: threeImage, 2: twoImage, 1: oneImage };
 
   function handleClosePopup(event) {
     event.preventDefault();
@@ -68,19 +74,16 @@ function CameraCapture() {
   function handleChangeBackground() {
     setCurrentBackground(
       (previous) =>
-        backgrounds[(backgrounds.indexOf(previous) + 1) % backgrounds.length]
+        backgrounds[(backgrounds.indexOf(previous) + 1) % backgrounds.length],
     );
   }
 
-  function handleCapturePhoto() {
-    setIsCapturing(true);
-
+  function capturePhoto() {
     const video = videoRef.current;
     const stickersCanvas = canvasRef.current;
     const captureCanvas = document.createElement("canvas");
 
     if (!video || !stickersCanvas) {
-      console.error("Video or stickersCanvas is not available");
       setIsCapturing(false);
 
       return;
@@ -98,14 +101,14 @@ function CameraCapture() {
       0,
       0,
       captureCanvas.width,
-      captureCanvas.height
+      captureCanvas.height,
     );
     captureContext.drawImage(
       stickersCanvas,
       0,
       0,
       captureCanvas.width,
-      captureCanvas.height
+      captureCanvas.height,
     );
 
     const capturedImage = captureCanvas.toDataURL("image/png");
@@ -120,6 +123,24 @@ function CameraCapture() {
     }, TIME.FLASH);
 
     videoRef.current.pause();
+  }
+
+  function handleCapturePhoto() {
+    setIsCapturing(true);
+    setCountdownNumber(3);
+
+    const countdownInterval = setInterval(() => {
+      setCountdownNumber((prevNumber) => {
+        if (prevNumber === 1) {
+          clearInterval(countdownInterval);
+          capturePhoto();
+
+          return null;
+        }
+
+        return prevNumber - 1;
+      });
+    }, 1000);
   }
 
   function handleDownloadPhoto() {
@@ -147,19 +168,19 @@ function CameraCapture() {
         x: sum.x + point.x / leftEye.length,
         y: sum.y + point.y / leftEye.length,
       }),
-      { x: 0, y: 0 }
+      { x: 0, y: 0 },
     );
     const rightEyeCenter = rightEye.reduce(
       (sum, point) => ({
         x: sum.x + point.x / rightEye.length,
         y: sum.y + point.y / rightEye.length,
       }),
-      { x: 0, y: 0 }
+      { x: 0, y: 0 },
     );
 
     return Math.atan2(
       rightEyeCenter.y - leftEyeCenter.y,
-      rightEyeCenter.x - leftEyeCenter.x
+      rightEyeCenter.x - leftEyeCenter.x,
     );
   }
 
@@ -185,7 +206,7 @@ function CameraCapture() {
       }
 
       const stickerWidth = Math.floor(
-        (sticker.size.width / 389.13) * faceWidth
+        (sticker.size.width / 389.13) * faceWidth,
       );
       let stickerHeight;
       let relativeX;
@@ -203,20 +224,20 @@ function CameraCapture() {
         relativeX = Math.floor(
           faceCenter.x +
             (sticker.position.x - 500) * (faceWidth / 800) +
-            faceWidth * 0.25 * index
+            faceWidth * 0.25 * index,
         );
         relativeY = Math.floor(
           faceCenter.y +
             (sticker.position.y - 400) * (faceHeight / 800) +
             faceHeight * 0.35 * index -
-            100
+            100,
         );
       }
 
       canvasContext.save();
       canvasContext.translate(
         relativeX + stickerWidth / 2,
-        relativeY + stickerHeight / 2
+        relativeY + stickerHeight / 2,
       );
       canvasContext.rotate(calculateStickerRotation(landmarks));
       canvasContext.drawImage(
@@ -224,7 +245,7 @@ function CameraCapture() {
         -stickerWidth / 2,
         -stickerHeight / 2,
         stickerWidth,
-        stickerHeight
+        stickerHeight,
       );
       canvasContext.restore();
     });
@@ -253,7 +274,7 @@ function CameraCapture() {
 
           const resizedDetections = faceapi.resizeResults(
             detections,
-            displaySize
+            displaySize,
           );
 
           resizedDetections.forEach((resizedDetection) => {
@@ -298,7 +319,7 @@ function CameraCapture() {
   useEffect(() => {
     offScreenCanvasRef.current = new OffscreenCanvas(
       videoRef.current.videoWidth || 1200,
-      videoRef.current.videoHeight || 800
+      videoRef.current.videoHeight || 800,
     );
 
     const offScreenContext = offScreenCanvasRef.current.getContext("2d", {
@@ -350,7 +371,7 @@ function CameraCapture() {
           0,
           0,
           canvasRef.current.width,
-          canvasRef.current.height
+          canvasRef.current.height,
         );
       }
     };
@@ -396,6 +417,14 @@ function CameraCapture() {
               <div className="button-green" />
             </div>
           </div>
+          {countdownNumber !== null && (
+            <Countdown>
+              <img
+                src={countdownImages[countdownNumber]}
+                alt={`${countdownNumber}`}
+              />
+            </Countdown>
+          )}
           {showPhoto && (
             <PhotoContainer>
               <a
@@ -666,6 +695,19 @@ const Canvas = styled.canvas`
   width: 1000px;
   height: 642px;
   object-fit: cover;
+`;
+
+const Countdown = styled.div`
+  position: absolute;
+  top: 80%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+
+  img {
+    width: 200px;
+    height: 200px;
+  }
 `;
 
 export default CameraCapture;
