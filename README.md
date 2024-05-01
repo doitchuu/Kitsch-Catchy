@@ -8,7 +8,7 @@
 <center>
 
 서비스가 궁금하시다면 링크를 눌러주세요. [Kitsch Catchy Website](https://kitschcatchy.doitchuu.dev/)
-| [Notion](https://kitschcatchy.doitchuu.dev/)
+| [Notion](https://doitchuu.notion.site/KITSCH-CATCHY-faa90c8ee25d45348a1c4f9304dec7fd?pvs=4)
 
 </center>
 
