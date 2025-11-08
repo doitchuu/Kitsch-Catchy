@@ -102,6 +102,7 @@ function Sidebar({ onStickerClick }) {
                   src={sticker.src}
                   alt={sticker.name}
                   draggable="true"
+                  loading="lazy"
                   onClick={() => handleStickerClick(sticker)}
                 />
               ))}
@@ -117,6 +118,7 @@ function Sidebar({ onStickerClick }) {
                   src={template.src}
                   alt={template.type}
                   draggable="true"
+                  loading="lazy"
                   onClick={() => handleStickerClick(template)}
                 />
               ))}
@@ -132,13 +134,39 @@ const SidebarContainer = styled.div`
   box-sizing: border-box;
   width: auto;
   min-width: 480px;
+  height: 100vh;
   margin: 0;
   padding: 40px;
 
   background-color: #2d2d2e;
   color: #ffffff;
 
-  overflow-y: scroll;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+  transform: translateZ(0);
+  contain: layout style paint;
+
+  /* 스크롤바 스타일링 */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+  }
 
   .image-logo {
     width: 200px;
@@ -159,7 +187,6 @@ const TabContainer = styled.div`
   padding-bottom: 40px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0, 0.2);
   width: 100%;
-  height: 100%;
 
   .sticker-content,
   .template-content {
@@ -171,6 +198,7 @@ const TabContainer = styled.div`
 
 const TabContent = styled.div`
   display: flex;
+  contain: layout style;
 
   input {
     display: none;
@@ -244,6 +272,9 @@ const StickerImage = styled.img`
 
   object-fit: contain;
   cursor: pointer;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  image-rendering: -webkit-optimize-contrast;
 `;
 
 export default Sidebar;
