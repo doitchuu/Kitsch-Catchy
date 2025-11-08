@@ -5,6 +5,7 @@ const useFilterStore = create(
   persist(
     (set) => ({
       filterStickers: [],
+      sampleFaceLandmarks: null,
       addFilterSticker: (newFilterSticker) =>
         set((state) => ({
           filterStickers: [...state.filterStickers, newFilterSticker],
@@ -27,6 +28,8 @@ const useFilterStore = create(
           ),
         })),
       clearAllStickers: () => set({ filterStickers: [] }),
+      setSampleFaceLandmarks: (landmarks) =>
+        set({ sampleFaceLandmarks: landmarks }),
     }),
     {
       name: "filter-storage",
