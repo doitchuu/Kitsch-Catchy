@@ -12,6 +12,7 @@ import useFilterStore from "../../store/filter";
 
 import TIME from "../../constants/timeConstants";
 import getFaceCenter from "../../utils/getFaceCenter";
+import mapStickerToFace from "../../utils/mapStickerToFace";
 import threeImage from "../../../public/assets/numbers/number_3.png";
 import twoImage from "../../../public/assets/numbers/number_2.png";
 import oneImage from "../../../public/assets/numbers/number_1.png";
@@ -37,7 +38,7 @@ function CameraCapture() {
 
   const navigate = useNavigate();
 
-  const { filterStickers } = useFilterStore();
+  const { filterStickers, sampleFaceLandmarks } = useFilterStore();
 
   const canvasRef = useRef(null);
   const videoRef = useRef(null);
@@ -186,7 +187,6 @@ function CameraCapture() {
 
   function renderStickers(detection, canvasContext) {
     const { landmarks } = detection;
-    const faceCenter = getFaceCenter(landmarks);
     const {
       x: faceX,
       y: faceY,
@@ -194,7 +194,14 @@ function CameraCapture() {
       height: faceHeight,
     } = detection.detection.box;
 
-    filterStickers.forEach((sticker, index) => {
+    const realBox = {
+      x: faceX,
+      y: faceY,
+      width: faceWidth,
+      height: faceHeight,
+    };
+
+    filterStickers.forEach((sticker) => {
       if (!sticker.position || !sticker.size) {
         return;
       }
@@ -205,47 +212,69 @@ function CameraCapture() {
         return;
       }
 
-      const stickerWidth = Math.floor(
-        (sticker.size.width / 389.13) * faceWidth,
-      );
-      let stickerHeight;
-      let relativeX;
-      let relativeY;
+      let mappedPosition;
 
       if (sticker.type === "template") {
-        stickerHeight = Math.floor((sticker.size.height / 529.44) * faceHeight);
-        relativeX = faceX + faceWidth / 2 - stickerWidth / 2;
-        relativeY = faceY + faceHeight / 2 - stickerHeight / 2 - faceHeight / 3;
-      } else {
-        const originalAspectRatio =
-          stickerImage.naturalHeight / stickerImage.naturalWidth;
+        // 템플릿은 기존 방식대로 얼굴 중앙에 배치
+        const stickerWidth = Math.floor(
+          (sticker.size.width / 389.13) * faceWidth,
+        );
+        const stickerHeight = Math.floor(
+          (sticker.size.height / 529.44) * faceHeight,
+        );
 
-        stickerHeight = stickerWidth * originalAspectRatio;
-        relativeX = Math.floor(
-          faceCenter.x +
-            (sticker.position.x - 500) * (faceWidth / 800) +
-            faceWidth * 0.25 * index,
+        mappedPosition = {
+          x: faceX + faceWidth / 2 - stickerWidth / 2,
+          y: faceY + faceHeight / 2 - stickerHeight / 2 - faceHeight / 3,
+          width: stickerWidth,
+          height: stickerHeight,
+        };
+      } else {
+        // 일반 스티커는 샘플 얼굴 랜드마크 기준으로 매핑
+        if (!sampleFaceLandmarks) {
+          // 샘플 랜드마크가 아직 로드되지 않은 경우 - 스티커를 렌더링하지 않음
+          return;
+        }
+
+        mappedPosition = mapStickerToFace(
+          sticker,
+          sampleFaceLandmarks,
+          landmarks,
+          realBox,
         );
-        relativeY = Math.floor(
-          faceCenter.y +
-            (sticker.position.y - 400) * (faceHeight / 800) +
-            faceHeight * 0.35 * index -
-            100,
-        );
+
+        if (!mappedPosition) {
+          // 매핑 실패 시 기존 방식으로 폴백
+          const faceCenter = getFaceCenter(landmarks);
+          const stickerWidth = Math.floor(
+            (sticker.size.width / 389.13) * faceWidth,
+          );
+          const originalAspectRatio =
+            stickerImage.naturalHeight / stickerImage.naturalWidth;
+          const stickerHeight = stickerWidth * originalAspectRatio;
+
+          mappedPosition = {
+            x: faceCenter.x + (sticker.position.x - 400) * (faceWidth / 800),
+            y: faceCenter.y + (sticker.position.y - 400) * (faceHeight / 800),
+            width: stickerWidth,
+            height: stickerHeight,
+          };
+        }
       }
 
+      // 스티커 회전 및 렌더링
       canvasContext.save();
       canvasContext.translate(
-        relativeX + stickerWidth / 2,
-        relativeY + stickerHeight / 2,
+        mappedPosition.x + mappedPosition.width / 2,
+        mappedPosition.y + mappedPosition.height / 2,
       );
       canvasContext.rotate(calculateStickerRotation(landmarks));
       canvasContext.drawImage(
         stickerImage,
-        -stickerWidth / 2,
-        -stickerHeight / 2,
-        stickerWidth,
-        stickerHeight,
+        -mappedPosition.width / 2,
+        -mappedPosition.height / 2,
+        mappedPosition.width,
+        mappedPosition.height,
       );
       canvasContext.restore();
     });
@@ -268,7 +297,7 @@ function CameraCapture() {
 
       faceapi
         .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks()
+        .withFaceLandmarks(true)
         .then((detections) => {
           context.clearRect(0, 0, displaySize.width, displaySize.height);
 
@@ -304,14 +333,12 @@ function CameraCapture() {
           detectFace();
         };
       })
-      .catch((error) => {
-        console.log(error);
-      });
+      .catch(() => {});
   }
 
   async function loadModels() {
     await Promise.all([
-      faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
+      faceapi.nets.faceLandmark68TinyNet.loadFromUri("/models"),
       faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
     ]);
   }
@@ -461,6 +488,13 @@ function CameraCapture() {
               muted
             />
             <Canvas ref={canvasRef} />
+            {filterStickers.length > 0 && !sampleFaceLandmarks && (
+              <LoadingOverlay>
+                🔄 필터 준비 중...
+                <br />
+                잠시만 기다려주세요
+              </LoadingOverlay>
+            )}
           </VideoContainer>
         </CameraContainer>
         <BottomNavigation>
@@ -695,6 +729,23 @@ const Canvas = styled.canvas`
   width: 1000px;
   height: 642px;
   object-fit: cover;
+`;
+
+const LoadingOverlay = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  padding: 20px 40px;
+  border-radius: 12px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 `;
 
 const Countdown = styled.div`

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "@emotion/styled";
 import debounce from "lodash/debounce";
 import { nanoid } from "nanoid";
+import * as faceapi from "face-api.js";
 
 import Sidebar from "../Sidebar";
 import Header from "../Header";
@@ -11,6 +12,8 @@ import ToastPopup from "../shared/ToastPopup";
 import FilterSticker from "../FilterSticker";
 
 import useFilterStore from "../../store/filter";
+import extractSampleFaceLandmarks from "../../utils/extractSampleFaceLandmarks";
+import getManualSampleLandmarks from "../../utils/getManualSampleLandmarks";
 
 import SIZE from "../../constants/sizeConstants";
 import TIME from "../../constants/timeConstants";
@@ -24,10 +27,12 @@ function NewFilter() {
 
   const {
     filterStickers,
+    sampleFaceLandmarks,
     addFilterSticker,
     deleteFilterSticker,
     updateFilterSticker,
     clearAllStickers,
+    setSampleFaceLandmarks,
   } = useFilterStore();
 
   function handleClosePopup(event) {
@@ -98,7 +103,38 @@ function NewFilter() {
 
   useEffect(() => {
     clearAllStickers();
-  }, []);
+
+    async function loadModelsAndExtractLandmarks() {
+      try {
+        setIsLoading(true);
+
+        await Promise.all([
+          faceapi.nets.faceLandmark68TinyNet.loadFromUri("/models"),
+          faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
+        ]);
+
+        let landmarks;
+        try {
+          landmarks = await extractSampleFaceLandmarks(
+            "/assets/face_sample_image.png",
+          );
+        } catch (faceDetectionError) {
+          landmarks = getManualSampleLandmarks();
+        }
+
+        setSampleFaceLandmarks(landmarks);
+        setIsLoading(false);
+      } catch (error) {
+        setToast({
+          status: true,
+          message: "필터 준비 중 오류가 발생했습니다 😥",
+        });
+        setIsLoading(false);
+      }
+    }
+
+    loadModelsAndExtractLandmarks();
+  }, [clearAllStickers, setSampleFaceLandmarks]);
 
   return (
     <>
@@ -195,6 +231,7 @@ const FilterCreationArea = styled.div`
   box-shadow:
     0 10px 36px rgba(0, 0, 0, 0.05),
     0 6px 6px rgba(0, 0, 0, 0.1);
+  contain: layout style paint;
 `;
 
 const PopupContainer = styled.div`
